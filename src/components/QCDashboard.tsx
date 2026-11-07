@@ -78,13 +78,17 @@ export const QCDashboard: React.FC<Props> = ({
   return (
     <div className="space-y-6">
       {/* Top Header Card */}
-      <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6 shadow-sm">
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2 text-xs font-medium text-slate-400 mb-1">
-              <span>Academic Curriculum Quality Council</span>
-              <span aria-hidden="true">·</span>
-              <span>Dual-Layer Validation Pipeline</span>
+            <div className="flex flex-wrap items-center gap-2 text-xs font-medium text-slate-300 mb-2">
+              <span className="px-2.5 py-0.5 rounded-full bg-teal-950/70 border border-teal-700/60 text-teal-300 font-semibold">
+                EduCraft AI QC Validation Engine
+              </span>
+              <span>·</span>
+              <span className="text-slate-300">
+                done by <strong className="text-teal-300 font-bold">Naghul Pranav K R</strong>
+              </span>
             </div>
             <h2 className="text-xl lg:text-2xl font-bold text-white tracking-tight">
               Two Independent Quality Control (QC) Layers
@@ -108,7 +112,7 @@ export const QCDashboard: React.FC<Props> = ({
             <button
               onClick={onReAudit}
               disabled={isAuditing}
-              className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-[#182740] hover:bg-[#203354] border border-[#22395d] rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 px-3 py-2 text-xs font-medium text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
               title="Re-run both QC audits"
             >
               <RefreshCw className={`w-4 h-4 ${isAuditing ? 'animate-spin' : ''}`} />
@@ -124,8 +128,8 @@ export const QCDashboard: React.FC<Props> = ({
             onClick={() => setActiveTab('layer1')}
             className={`p-4 rounded-xl border transition-all cursor-pointer ${
               activeTab === 'layer1'
-                ? 'bg-[#182740] border-teal-500 shadow-md ring-1 ring-teal-500/50'
-                : 'bg-[#0b121f] border-[#1e2f4a] hover:border-slate-600'
+                ? 'bg-slate-700 border-teal-500 shadow-md ring-1 ring-teal-500/50'
+                : 'bg-slate-900 border-slate-700 hover:border-slate-600'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -145,7 +149,7 @@ export const QCDashboard: React.FC<Props> = ({
                 {qc1Report && getStatusBadge(qc1Report.status)}
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-[#1e2f4a] flex items-center justify-between text-xs text-slate-400">
+            <div className="mt-3 pt-3 border-t border-slate-700 flex items-center justify-between text-xs text-slate-400">
               <span>{qc1Report?.issues.length || 0} findings recorded</span>
               <span className="text-teal-400 font-medium">View Layer 1 Audit &rarr;</span>
             </div>
@@ -156,8 +160,8 @@ export const QCDashboard: React.FC<Props> = ({
             onClick={() => setActiveTab('layer2')}
             className={`p-4 rounded-xl border transition-all cursor-pointer ${
               activeTab === 'layer2'
-                ? 'bg-[#182740] border-sky-500 shadow-md ring-1 ring-sky-500/50'
-                : 'bg-[#0b121f] border-[#1e2f4a] hover:border-slate-600'
+                ? 'bg-slate-700 border-sky-500 shadow-md ring-1 ring-sky-500/50'
+                : 'bg-slate-900 border-slate-700 hover:border-slate-600'
             }`}
           >
             <div className="flex items-center justify-between">
@@ -177,7 +181,7 @@ export const QCDashboard: React.FC<Props> = ({
                 {qc2Report && getStatusBadge(qc2Report.status)}
               </div>
             </div>
-            <div className="mt-3 pt-3 border-t border-[#1e2f4a] flex items-center justify-between text-xs text-slate-400">
+            <div className="mt-3 pt-3 border-t border-slate-700 flex items-center justify-between text-xs text-slate-400">
               <span>{qc2Report?.instructionalIssues.length || 0} recommendations</span>
               <span className="text-sky-400 font-medium">View Layer 2 Audit &rarr;</span>
             </div>
@@ -185,13 +189,13 @@ export const QCDashboard: React.FC<Props> = ({
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-[#1e2f4a]">
+        <div className="flex items-center gap-2 mt-6 pt-4 border-t border-slate-700">
           <button
             onClick={() => setActiveTab('layer1')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               activeTab === 'layer1'
                 ? 'bg-teal-600 text-white shadow-sm'
-                : 'bg-[#182740] text-slate-300 hover:text-white'
+                : 'bg-slate-700 text-slate-300 hover:text-white'
             }`}
           >
             QC Layer 1: Research & Factual Accuracy Report
@@ -201,7 +205,7 @@ export const QCDashboard: React.FC<Props> = ({
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               activeTab === 'layer2'
                 ? 'bg-sky-600 text-white shadow-sm'
-                : 'bg-[#182740] text-slate-300 hover:text-white'
+                : 'bg-slate-700 text-slate-300 hover:text-white'
             }`}
           >
             QC Layer 2: Instructional Quality Report
@@ -210,8 +214,8 @@ export const QCDashboard: React.FC<Props> = ({
             onClick={() => setActiveTab('comparison')}
             className={`px-4 py-2 text-xs font-semibold rounded-lg transition-colors cursor-pointer ${
               activeTab === 'comparison'
-                ? 'bg-stone-700 text-white shadow-sm'
-                : 'bg-[#182740] text-slate-300 hover:text-white'
+                ? 'bg-slate-600 text-white shadow-sm'
+                : 'bg-slate-700 text-slate-300 hover:text-white'
             }`}
           >
             Side-by-Side Dual Audit Matrix
@@ -222,14 +226,14 @@ export const QCDashboard: React.FC<Props> = ({
       {/* TAB 1: QC LAYER 1 */}
       {activeTab === 'layer1' && (
         <div className="space-y-6">
-          <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-semibold text-teal-400 uppercase tracking-wider">Audit Synthesis</span>
             </div>
             <p className="text-slate-200 text-sm leading-relaxed">{qc1Report?.summary}</p>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t border-[#1e2f4a]">
-              <div className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-4 border-t border-slate-700">
+              <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
                 <div className="flex items-center gap-1.5 text-xs text-slate-400">
                   <BookOpen className="w-3.5 h-3.5 text-sky-400" />
                   <span>Books Audited</span>
@@ -239,7 +243,7 @@ export const QCDashboard: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+              <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
                 <div className="flex items-center gap-1.5 text-xs text-slate-400">
                   <Globe className="w-3.5 h-3.5 text-teal-400" />
                   <span>Web Sources / RFCs</span>
@@ -249,7 +253,7 @@ export const QCDashboard: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+              <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
                 <div className="flex items-center gap-1.5 text-xs text-slate-400">
                   <Youtube className="w-3.5 h-3.5 text-rose-400" />
                   <span>Videos Verified</span>
@@ -259,7 +263,7 @@ export const QCDashboard: React.FC<Props> = ({
                 </div>
               </div>
 
-              <div className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+              <div className="p-3 bg-slate-900 rounded-lg border border-slate-700">
                 <div className="flex items-center gap-1.5 text-xs text-slate-400">
                   <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
                   <span>Citation Reliability</span>
@@ -272,7 +276,7 @@ export const QCDashboard: React.FC<Props> = ({
           </div>
 
           {/* Itemized Findings */}
-          <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-bold text-white">Itemized Factual Findings & Source Corrections</h3>
@@ -291,8 +295,8 @@ export const QCDashboard: React.FC<Props> = ({
                   key={issue.id}
                   className={`rounded-xl border transition-all ${
                     issue.applied
-                      ? 'bg-[#0b121f]/60 border-[#1e2f4a] opacity-75'
-                      : 'bg-[#0b121f] border-[#1e2f4a] hover:border-slate-600'
+                      ? 'bg-slate-900/60 border-slate-700 opacity-75'
+                      : 'bg-slate-900 border-slate-700 hover:border-slate-600'
                   }`}
                 >
                   <div
@@ -337,10 +341,10 @@ export const QCDashboard: React.FC<Props> = ({
                   </div>
 
                   {expandedIssueId === issue.id && (
-                    <div className="px-4 pb-4 pt-2 border-t border-[#1e2f4a] space-y-3">
+                    <div className="px-4 pb-4 pt-2 border-t border-slate-700 space-y-3">
                       <div>
                         <div className="text-xs font-medium text-slate-400 mb-1">Auditor Critique:</div>
-                        <p className="text-xs text-slate-200 leading-relaxed bg-[#131f33] p-2.5 rounded border border-[#1e2f4a]">
+                        <p className="text-xs text-slate-200 leading-relaxed bg-slate-800 p-2.5 rounded border border-slate-700">
                           {issue.critique}
                         </p>
                       </div>
@@ -372,7 +376,7 @@ export const QCDashboard: React.FC<Props> = ({
       {/* TAB 2: QC LAYER 2 */}
       {activeTab === 'layer2' && (
         <div className="space-y-6">
-          <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center gap-2 mb-2">
               <span className="text-xs font-semibold text-sky-400 uppercase tracking-wider">
                 Pedagogical Analysis
@@ -380,8 +384,8 @@ export const QCDashboard: React.FC<Props> = ({
             </div>
             <p className="text-slate-200 text-sm leading-relaxed">{qc2Report?.summary}</p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-4 border-t border-[#1e2f4a]">
-              <div className="p-4 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6 pt-4 border-t border-slate-700">
+              <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <div className="flex items-center gap-1.5">
                     <Target className="w-3.5 h-3.5 text-teal-400" />
@@ -402,7 +406,7 @@ export const QCDashboard: React.FC<Props> = ({
                 </p>
               </div>
 
-              <div className="p-4 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+              <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
                 <div className="flex items-center justify-between text-xs text-slate-400">
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-3.5 h-3.5 text-sky-400" />
@@ -418,7 +422,7 @@ export const QCDashboard: React.FC<Props> = ({
                 </p>
               </div>
 
-              <div className="p-4 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+              <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
                 <div className="flex items-center gap-1.5 text-xs text-slate-400 mb-1">
                   <FileText className="w-3.5 h-3.5 text-amber-400" />
                   <span>Sub-Clauses Covered</span>
@@ -436,7 +440,7 @@ export const QCDashboard: React.FC<Props> = ({
           </div>
 
           {/* Instructional Issues */}
-          <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6">
+          <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-base font-bold text-white">Pedagogical Recommendations & Gaps</h3>
@@ -455,8 +459,8 @@ export const QCDashboard: React.FC<Props> = ({
                   key={issue.id}
                   className={`rounded-xl border transition-all ${
                     issue.applied
-                      ? 'bg-[#0b121f]/60 border-[#1e2f4a] opacity-75'
-                      : 'bg-[#0b121f] border-[#1e2f4a] hover:border-slate-600'
+                      ? 'bg-slate-900/60 border-slate-700 opacity-75'
+                      : 'bg-slate-900 border-slate-700 hover:border-slate-600'
                   }`}
                 >
                   <div
@@ -501,10 +505,10 @@ export const QCDashboard: React.FC<Props> = ({
                   </div>
 
                   {expandedIssueId === issue.id && (
-                    <div className="px-4 pb-4 pt-2 border-t border-[#1e2f4a] space-y-3">
+                    <div className="px-4 pb-4 pt-2 border-t border-slate-700 space-y-3">
                       <div>
                         <div className="text-xs font-medium text-slate-400 mb-1">Instructional Diagnosis:</div>
-                        <p className="text-xs text-slate-200 leading-relaxed bg-[#131f33] p-2.5 rounded border border-[#1e2f4a]">
+                        <p className="text-xs text-slate-200 leading-relaxed bg-slate-800 p-2.5 rounded border border-slate-700">
                           {issue.observedProblem}
                         </p>
                       </div>
@@ -526,15 +530,15 @@ export const QCDashboard: React.FC<Props> = ({
 
       {/* TAB 3: DUAL MATRIX */}
       {activeTab === 'comparison' && (
-        <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6">
+        <div className="bg-slate-800 border border-slate-700 rounded-xl p-6">
           <h3 className="text-base font-bold text-white mb-2">Side-by-Side Dual QC Comparison Matrix</h3>
           <p className="text-xs text-slate-300 mb-6">
             Compare the independent verdicts of Quality Control Layer 1 (Factual Accuracy) and Layer 2 (Instructional Quality).
           </p>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="p-5 rounded-xl bg-[#0b121f] border border-teal-800/60 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#1e2f4a]">
+            <div className="p-5 rounded-xl bg-slate-900 border border-teal-800/60 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-700">
                 <div className="flex items-center gap-2">
                   <ShieldCheck className="w-5 h-5 text-teal-400" />
                   <span className="font-bold text-white text-sm">QC Layer 1: Factual & Research</span>
@@ -544,8 +548,8 @@ export const QCDashboard: React.FC<Props> = ({
               <p className="text-xs text-slate-300 leading-relaxed">{qc1Report?.summary}</p>
             </div>
 
-            <div className="p-5 rounded-xl bg-[#0b121f] border border-sky-800/60 space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-[#1e2f4a]">
+            <div className="p-5 rounded-xl bg-slate-900 border border-sky-800/60 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-700">
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-5 h-5 text-sky-400" />
                   <span className="font-bold text-white text-sm">QC Layer 2: Instructional Quality</span>

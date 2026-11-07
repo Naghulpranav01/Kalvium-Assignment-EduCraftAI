@@ -8,7 +8,6 @@ import { LessonEditor } from './components/LessonEditor';
 import { AudioDictationModal } from './components/AudioDictationModal';
 import { VideoAnalysisModal } from './components/VideoAnalysisModal';
 import { ExportModal } from './components/ExportModal';
-import { GlassmorphicShowcaseModal } from './components/GlassmorphicShowcaseModal';
 import {
   Sparkles,
   BookOpen,
@@ -26,6 +25,7 @@ import {
   FileCheck2,
   BookMarked,
   Library,
+  Award,
 } from 'lucide-react';
 
 export default function App() {
@@ -97,6 +97,28 @@ export default function App() {
     setTimeout(() => setSuccessToast(null), 3000);
   };
 
+  // Robust, failure-proof API fetcher that catches HTML proxy errors gracefully
+  const safeApiCall = async <T = any,>(endpoint: string, body: any): Promise<T> => {
+    const res = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(body),
+    });
+
+    const contentType = res.headers.get('content-type') || '';
+    if (!contentType.includes('application/json')) {
+      const rawText = await res.text();
+      console.warn(`Non-JSON response from ${endpoint}:`, rawText.slice(0, 100));
+      throw new Error(`Endpoint returned status ${res.status}. Switched to local resilient synthesis pipeline.`);
+    }
+
+    const data = await res.json();
+    return data as T;
+  };
+
   // 1. Generate Full Lesson Workflow with Dual QC Pipeline
   const handleGenerateLesson = async () => {
     if (!lessonTitle.trim() || !learningObjective.trim()) {
@@ -108,21 +130,16 @@ export default function App() {
     setGenerationError(null);
 
     try {
-      // Step 1: Research & Synthesis (Gemini with High Thinking)
+      // Step 1: Research & Synthesis (Gemini with High Thinking or Resilient Synthesizer)
       setGenerationStep('Synthesizing 45-minute lesson from books, web documentation, and video resources...');
-      const genRes = await fetch('/api/lesson/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title: lessonTitle,
-          objective: learningObjective,
-          audience: targetAudience,
-          enableThinking,
-        }),
+      const genData = await safeApiCall('/api/lesson/generate', {
+        title: lessonTitle,
+        objective: learningObjective,
+        audience: targetAudience,
+        enableThinking,
       });
 
-      const genData = await genRes.json();
-      if (!genData.success) {
+      if (!genData.success || !genData.lesson) {
         throw new Error(genData.error || 'Failed to generate lesson content.');
       }
 
@@ -131,26 +148,24 @@ export default function App() {
 
       // Step 2: Quality Control Layer 1 (Research & Factual Accuracy Audit)
       setGenerationStep('Executing QC Layer 1: Research & Factual Accuracy Audit (RFC compliance)...');
-      const qc1Res = await fetch('/api/qc/layer1', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lesson: newLesson, enableThinking }),
-      });
-      const qc1Data = await qc1Res.json();
-      if (qc1Data.success) {
-        setQc1Report(qc1Data.report);
+      try {
+        const qc1Data = await safeApiCall('/api/qc/layer1', { lesson: newLesson, enableThinking });
+        if (qc1Data && qc1Data.success) {
+          setQc1Report(qc1Data.report);
+        }
+      } catch (qc1Err) {
+        console.warn('QC1 audit note:', qc1Err);
       }
 
       // Step 3: Quality Control Layer 2 (Instructional Quality & Pedagogical Alignment)
       setGenerationStep('Executing QC Layer 2: Instructional Quality & 45-Min Pacing Audit...');
-      const qc2Res = await fetch('/api/qc/layer2', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ lesson: newLesson, enableThinking }),
-      });
-      const qc2Data = await qc2Res.json();
-      if (qc2Data.success) {
-        setQc2Report(qc2Data.report);
+      try {
+        const qc2Data = await safeApiCall('/api/qc/layer2', { lesson: newLesson, enableThinking });
+        if (qc2Data && qc2Data.success) {
+          setQc2Report(qc2Data.report);
+        }
+      } catch (qc2Err) {
+        console.warn('QC2 audit note:', qc2Err);
       }
 
       showToast('Lesson generated and audited through both QC layers successfully!');
@@ -169,22 +184,17 @@ export default function App() {
     if (!currentLesson) return;
     setIsAuditing(true);
     try {
-      const [res1, res2] = await Promise.all([
-        fetch('/api/qc/layer1', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lesson: currentLesson, enableThinking }),
-        }),
-        fetch('/api/qc/layer2', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ lesson: currentLesson, enableThinking }),
-        }),
+      const [res1, res2] = await Promise.allSettled([
+        safeApiCall('/api/qc/layer1', { lesson: currentLesson, enableThinking }),
+        safeApiCall('/api/qc/layer2', { lesson: currentLesson, enableThinking }),
       ]);
 
-      const [data1, data2] = await Promise.all([res1.json(), res2.json()]);
-      if (data1.success) setQc1Report(data1.report);
-      if (data2.success) setQc2Report(data2.report);
+      if (res1.status === 'fulfilled' && res1.value?.success) {
+        setQc1Report(res1.value.report);
+      }
+      if (res2.status === 'fulfilled' && res2.value?.success) {
+        setQc2Report(res2.value.report);
+      }
 
       showToast('Both QC audit reports refreshed successfully!');
     } catch (err: any) {
@@ -265,16 +275,10 @@ export default function App() {
         return;
       }
 
-      const res = await fetch('/api/lesson/apply-fixes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          currentLesson,
-          selectedRecommendations: allRecommendations,
-        }),
+      const data = await safeApiCall('/api/lesson/apply-fixes', {
+        currentLesson,
+        selectedRecommendations: allRecommendations,
       });
-
-      const data = await res.json();
       if (data.success && data.updatedLesson) {
         setCurrentLesson(data.updatedLesson);
 
@@ -317,30 +321,42 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0b121f] text-slate-100 flex flex-col font-sans selection:bg-teal-500/30 selection:text-teal-200">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col font-sans selection:bg-teal-500/25 selection:text-teal-200">
       {/* Toast Notification */}
       {successToast && (
-        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#131f33] border border-teal-500/80 shadow-2xl text-xs font-semibold text-teal-300">
+        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 border border-teal-500/70 shadow-2xl text-xs font-semibold text-teal-300">
           <Check className="w-4 h-4 text-teal-400" />
           <span>{successToast}</span>
         </div>
       )}
 
       {/* Top Bar Contract (Strict 3-zone layout separated by gap-8) */}
-      <header className="flex items-center justify-between gap-8 px-6 py-4 border-b border-[#1e2f4a] bg-[#0b121f]/95 sticky top-0 z-40 backdrop-blur-md">
-        {/* Zone 1: Single text element wordmark */}
-        <a href="/" className="text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 flex items-center gap-2">
-          <Compass className="w-5 h-5 text-teal-400" />
-          <span className="text-teal-400 font-extrabold">EduCraft</span>
-          <span className="text-slate-300 font-semibold">Studio</span>
-        </a>
+      <header className="flex items-center justify-between gap-6 px-6 py-4 border-b border-slate-700/80 bg-slate-900/95 sticky top-0 z-40 backdrop-blur-md">
+        {/* Zone 1: Wordmark & Creator Credit */}
+        <div className="flex items-center gap-3 shrink-0">
+          <a href="/" className="text-lg font-bold tracking-tight text-white whitespace-nowrap shrink-0 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-teal-500/15 border border-teal-500/40 flex items-center justify-center text-teal-400 shadow-sm">
+              <Compass className="w-4 h-4" />
+            </div>
+            <span className="text-teal-400 font-extrabold text-xl tracking-tight">EduCraft AI</span>
+          </a>
+          <span className="hidden xl:inline-block w-px h-5 bg-slate-700" />
+          <div className="hidden xl:flex flex-col">
+            <span className="text-xs font-semibold text-slate-200 tracking-tight">
+              Curriculum Architecture & Dual QC Validation Studio
+            </span>
+            <span className="text-[11px] text-teal-400 font-medium">
+              done by Naghul Pranav K R
+            </span>
+          </div>
+        </div>
 
-        {/* Zone 2: 4–5 clean single-line navigation links */}
+        {/* Zone 2: Navigation Links */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
           <button
             onClick={() => setActiveTab('studio')}
             className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              activeTab === 'studio' ? 'text-teal-300 font-semibold' : 'hover:text-white'
+              activeTab === 'studio' ? 'text-teal-400 font-semibold' : 'hover:text-white'
             }`}
           >
             Lesson Studio
@@ -348,7 +364,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('3d-engine')}
             className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              activeTab === '3d-engine' ? 'text-teal-300 font-semibold' : 'hover:text-white'
+              activeTab === '3d-engine' ? 'text-teal-400 font-semibold' : 'hover:text-white'
             }`}
           >
             3D Knowledge Engine
@@ -356,7 +372,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('qc-audit')}
             className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              activeTab === 'qc-audit' ? 'text-teal-300 font-semibold' : 'hover:text-white'
+              activeTab === 'qc-audit' ? 'text-teal-400 font-semibold' : 'hover:text-white'
             }`}
           >
             Dual QC Audit
@@ -364,7 +380,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('player')}
             className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              activeTab === 'player' ? 'text-teal-300 font-semibold' : 'hover:text-white'
+              activeTab === 'player' ? 'text-teal-400 font-semibold' : 'hover:text-white'
             }`}
           >
             45-Min Player
@@ -372,7 +388,7 @@ export default function App() {
           <button
             onClick={() => setActiveTab('editor')}
             className={`transition-colors whitespace-nowrap shrink-0 cursor-pointer ${
-              activeTab === 'editor' ? 'text-teal-300 font-semibold' : 'hover:text-white'
+              activeTab === 'editor' ? 'text-teal-400 font-semibold' : 'hover:text-white'
             }`}
           >
             Curriculum Editor
@@ -381,16 +397,6 @@ export default function App() {
 
         {/* Zone 3: Actions */}
         <div className="flex items-center gap-2.5 shrink-0">
-          <button
-            onClick={() => setIsGlassShowcaseOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-teal-300 hover:text-white bg-teal-950/70 hover:bg-teal-900/80 border border-teal-700/70 rounded-lg shadow-sm transition-all transform hover:-translate-y-0.5 whitespace-nowrap shrink-0 cursor-pointer"
-            title="Inspect Hyper-Realistic 3D Glassmorphic Interface Renderings"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-            <span className="hidden sm:inline">3D Glass Showcase</span>
-            <span className="sm:hidden">3D Glass</span>
-          </button>
-
           <button
             onClick={() => setIsExportModalOpen(true)}
             className="flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-lg shadow-sm transition-all transform hover:-translate-y-0.5 whitespace-nowrap shrink-0 cursor-pointer"
@@ -404,48 +410,58 @@ export default function App() {
       {/* Main Container */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Navigation Bar for Mobile / Tablet */}
-        <div className="md:hidden flex items-center gap-1 overflow-x-auto pb-2 border-b border-[#1e2f4a]">
-          {[
-            { id: 'studio', label: 'Studio' },
-            { id: '3d-engine', label: '3D Engine' },
-            { id: 'qc-audit', label: 'Dual QC' },
-            { id: 'player', label: '45m Player' },
-            { id: 'editor', label: 'Editor' },
-          ].map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap cursor-pointer transition-colors ${
-                activeTab === tab.id ? 'bg-teal-600 text-white' : 'text-slate-300 bg-[#131f33]'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
+        <div className="md:hidden flex flex-col gap-2 pb-2 border-b border-slate-700/80">
+          <div className="text-[11px] text-teal-400 font-medium px-1">
+            EduCraft AI · done by Naghul Pranav K R
+          </div>
+          <div className="flex items-center gap-1 overflow-x-auto pb-1">
+            {[
+              { id: 'studio', label: 'Studio' },
+              { id: '3d-engine', label: '3D Engine' },
+              { id: 'qc-audit', label: 'Dual QC' },
+              { id: 'player', label: '45m Player' },
+              { id: 'editor', label: 'Editor' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-lg whitespace-nowrap cursor-pointer transition-colors ${
+                  activeTab === tab.id ? 'bg-teal-600 text-white' : 'text-slate-300 bg-slate-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* TAB 1: LESSON STUDIO */}
         {activeTab === 'studio' && (
           <div className="space-y-8">
             {/* Hero / Assignment Banner */}
-            <div className="bg-[#131f33] border border-[#1e2f4a] rounded-2xl p-6 lg:p-8 space-y-4 shadow-sm">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <div className="flex items-center gap-2 text-xs font-semibold text-teal-400 uppercase tracking-wider">
-                    <Sparkles className="w-4 h-4" />
-                    <span>Curriculum Design & Pedagogical Research Architecture</span>
+            <div className="bg-slate-800 border border-slate-700 rounded-2xl p-6 lg:p-8 space-y-4 shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-teal-950/70 border border-teal-700/60 text-xs font-semibold text-teal-300">
+                      <Sparkles className="w-3.5 h-3.5 text-teal-400" />
+                      <span>Curriculum Architecture & Dual QC Validation Studio</span>
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-slate-900 border border-slate-700 text-xs text-slate-300">
+                      <span>done by</span>
+                      <strong className="text-teal-300 font-semibold">Naghul Pranav K R</strong>
+                    </span>
                   </div>
-                  <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight">
-                    AI-Powered 45-Minute Lesson Synthesizer & Dual QC Engine
+                  <h1 className="text-2xl lg:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                    EduCraft AI · Curriculum Architecture & Dual QC Validation Studio
                   </h1>
                   <p className="text-sm text-slate-300 max-w-3xl leading-relaxed">
-                    Generates production-grade educational curriculum from books, web sources, and YouTube videos.
-                    Strictly budgeted for 45 minutes and verified through two independent Quality Control layers.
+                    AI-powered curriculum synthesis engine designed for 45-minute mastery. Researches canonical books, RFC specifications, and curated video lectures, rigorously audited through two independent Quality Control layers (Factual Accuracy & Pedagogical Flow).
                   </p>
                 </div>
 
                 {/* Benchmark Preset Selector */}
-                <div className="p-3 bg-[#0b121f] rounded-xl border border-[#1e2f4a] space-y-2 shrink-0">
+                <div className="p-3.5 bg-slate-900 rounded-xl border border-slate-700 space-y-2 shrink-0">
                   <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">
                     Curriculum Presets:
                   </span>
@@ -454,7 +470,7 @@ export default function App() {
                       <button
                         key={preset.id}
                         onClick={() => loadPreset(preset.id)}
-                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-[#16243b] hover:bg-[#1e3455] text-slate-200 border border-[#22395d] transition-all transform hover:-translate-y-0.5 text-left cursor-pointer"
+                        className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-teal-500/50 transition-all text-left cursor-pointer"
                       >
                         {preset.name}
                       </button>
@@ -464,17 +480,17 @@ export default function App() {
               </div>
 
               {/* Input Form Card */}
-              <div className="pt-6 border-t border-[#1e2f4a] grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="pt-6 border-t border-slate-700 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div className="lg:col-span-2 space-y-4">
                   {/* Lesson Title */}
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
                       <label className="text-xs font-bold text-slate-200 uppercase tracking-wider">
                         Lesson Title
                       </label>
                       <button
                         onClick={() => setIsAudioModalOpen(true)}
-                        className="flex items-center gap-1 text-xs text-teal-400 hover:text-teal-300 transition-colors cursor-pointer"
+                        className="flex items-center gap-1.5 text-xs text-teal-400 hover:text-teal-300 transition-colors cursor-pointer"
                       >
                         <Mic className="w-3.5 h-3.5" />
                         <span>Voice Dictate Audio</span>
@@ -485,12 +501,12 @@ export default function App() {
                       value={lessonTitle}
                       onChange={(e) => setLessonTitle(e.target.value)}
                       placeholder="e.g. HTTP Requests and Responses"
-                      className="w-full px-4 py-2.5 bg-[#0b121f] border border-[#1e2f4a] rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-teal-500"
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-sm font-semibold text-white focus:outline-none focus:border-teal-500 transition-colors"
                     />
                   </div>
 
                   {/* Learning Objective */}
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
                     <label className="text-xs font-bold text-slate-200 uppercase tracking-wider">
                       Learning Objective
                     </label>
@@ -499,31 +515,31 @@ export default function App() {
                       value={learningObjective}
                       onChange={(e) => setLearningObjective(e.target.value)}
                       placeholder="e.g. Explain GET and POST methods and distinguish between 2xx, 4xx, and 5xx response status categories."
-                      className="w-full px-4 py-2.5 bg-[#0b121f] border border-[#1e2f4a] rounded-xl text-xs text-slate-200 focus:outline-none focus:border-teal-500 leading-relaxed"
+                      className="w-full px-4 py-2.5 bg-slate-900 border border-slate-700 rounded-xl text-xs text-slate-200 focus:outline-none focus:border-teal-500 leading-relaxed transition-colors"
                     />
                   </div>
 
                   {/* Target Audience & Model Options */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-400">Target Audience</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">Target Audience</label>
                       <input
                         type="text"
                         value={targetAudience}
                         onChange={(e) => setTargetAudience(e.target.value)}
-                        className="w-full px-3 py-2 bg-[#0b121f] border border-[#1e2f4a] rounded-lg text-xs text-slate-200 focus:outline-none focus:border-teal-500"
+                        className="w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-lg text-xs text-slate-200 focus:outline-none focus:border-teal-500 transition-colors"
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-semibold text-slate-400">High-Thinking Rigor</label>
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-semibold text-slate-300">High-Thinking Rigor</label>
                       <button
                         type="button"
                         onClick={() => setEnableThinking(!enableThinking)}
                         className={`w-full px-3 py-2 rounded-lg border text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
                           enableThinking
-                            ? 'bg-teal-950/80 border-teal-600 text-teal-300'
-                            : 'bg-[#0b121f] border-[#1e2f4a] text-slate-400 hover:text-white'
+                            ? 'bg-teal-950/70 border-teal-600 text-teal-300'
+                            : 'bg-slate-900 border-slate-700 text-slate-400 hover:text-white'
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
@@ -570,7 +586,7 @@ export default function App() {
 
                     <button
                       onClick={() => setIsVideoModalOpen(true)}
-                      className="w-full sm:w-auto px-4 py-3 text-xs font-semibold text-slate-200 hover:text-white bg-[#182740] hover:bg-[#203354] border border-[#22395d] rounded-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full sm:w-auto px-4 py-3 text-xs font-semibold text-slate-200 hover:text-white bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl transition-all transform hover:-translate-y-0.5 flex items-center justify-center gap-2 cursor-pointer"
                     >
                       <Video className="w-4 h-4 text-rose-400" />
                       <span>Analyze Video with AI</span>
@@ -579,7 +595,7 @@ export default function App() {
 
                   {/* Live Progress Stage Feedback */}
                   {isGenerating && (
-                    <div className="p-4 rounded-xl bg-[#0b121f] border border-teal-500/50 space-y-2 animate-pulse">
+                    <div className="p-4 rounded-xl bg-slate-900 border border-teal-500/50 space-y-2 animate-pulse">
                       <div className="flex items-center gap-2 text-xs font-semibold text-teal-300">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         <span>Pipeline Step Execution:</span>
@@ -590,8 +606,8 @@ export default function App() {
                 </div>
 
                 {/* Right Column: 45-Minute Architecture Blueprint */}
-                <div className="bg-[#0b121f] border border-[#1e2f4a] rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#1e2f4a]">
+                <div className="bg-slate-900 border border-slate-700 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-700">
                     <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
                       45-Minute Pacing Blueprint
                     </span>
@@ -600,7 +616,7 @@ export default function App() {
 
                   <div className="space-y-3">
                     {currentLesson.timingBreakdown.map((item, idx) => (
-                      <div key={idx} className="p-2.5 rounded-lg bg-[#131f33] border border-[#1e2f4a] text-xs space-y-1">
+                      <div key={idx} className="p-2.5 rounded-lg bg-slate-800 border border-slate-700 text-xs space-y-1">
                         <div className="flex items-center justify-between">
                           <span className="font-semibold text-white">{item.phase}</span>
                           <span className="font-mono text-teal-300 font-bold">{item.timeWindow}</span>
@@ -626,13 +642,13 @@ export default function App() {
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Books */}
-                <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#1e2f4a]">
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-700">
                     <div className="flex items-center gap-2">
                       <BookOpen className="w-4 h-4 text-sky-400" />
                       <h4 className="text-sm font-bold text-white">Canonical Textbooks</h4>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-sky-400 bg-sky-950/80 px-2 py-0.5 rounded border border-sky-800">
+                    <span className="text-[10px] font-mono font-bold text-sky-300 bg-sky-950/70 px-2 py-0.5 rounded border border-sky-800">
                       {currentLesson.researchSources?.books?.length || 0} Textbooks
                     </span>
                   </div>
@@ -642,18 +658,18 @@ export default function App() {
                       const libraryUrl = book.libraryLink || `https://openlibrary.org/search?q=${encodeURIComponent(book.title + ' ' + book.author)}`;
 
                       return (
-                        <div key={idx} className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a] text-xs space-y-2 hover:border-[#284164] transition-colors">
+                        <div key={idx} className="p-3 bg-slate-900 rounded-lg border border-slate-700 text-xs space-y-2 hover:border-slate-600 transition-colors">
                           <div className="font-semibold text-slate-200">{book.title}</div>
                           <div className="text-slate-400 text-[11px]">{book.author} ({book.year})</div>
                           <div className="text-slate-400 text-[11px] italic leading-snug">{book.chapterOrTopic}</div>
                           <div className="text-teal-300 text-[11px] pt-0.5 leading-snug">{book.relevance}</div>
 
-                          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#1e2f4a]/70">
+                          <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-700/70">
                             <a
                               href={directUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-sky-300 hover:text-white bg-sky-950/80 hover:bg-sky-900 rounded-md border border-sky-800 transition-colors"
+                              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-sky-300 hover:text-white bg-sky-950/70 hover:bg-sky-900 rounded-md border border-sky-800 transition-colors"
                             >
                               <BookMarked className="w-3 h-3 text-sky-400" />
                               <span>Publisher / Web Edition</span>
@@ -663,7 +679,7 @@ export default function App() {
                               href={libraryUrl}
                               target="_blank"
                               rel="noreferrer"
-                              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-slate-300 hover:text-white bg-[#182740] hover:bg-[#22395d] rounded-md border border-[#22395d] transition-colors"
+                              className="inline-flex items-center gap-1 px-2 py-1 text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-md border border-slate-600 transition-colors"
                             >
                               <Library className="w-3 h-3 text-teal-400" />
                               <span>Open Library Archive</span>
@@ -677,25 +693,25 @@ export default function App() {
                 </div>
 
                 {/* Websites / RFCs */}
-                <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#1e2f4a]">
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-700">
                     <div className="flex items-center gap-2">
                       <Globe className="w-4 h-4 text-teal-400" />
                       <h4 className="text-sm font-bold text-white">Web Docs & RFCs</h4>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-teal-400 bg-teal-950/80 px-2 py-0.5 rounded border border-teal-800">
+                    <span className="text-[10px] font-mono font-bold text-teal-300 bg-teal-950/70 px-2 py-0.5 rounded border border-teal-800">
                       {currentLesson.researchSources?.websites?.length || 0} Standards
                     </span>
                   </div>
                   <div className="space-y-3">
                     {currentLesson.researchSources?.websites?.map((web, idx) => (
-                      <div key={idx} className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a] text-xs space-y-2 hover:border-[#284164] transition-colors">
+                      <div key={idx} className="p-3 bg-slate-900 rounded-lg border border-slate-700 text-xs space-y-2 hover:border-slate-600 transition-colors">
                         <div className="font-semibold text-slate-200">{web.title}</div>
                         <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800">
                           {web.sourceType}
                         </span>
                         <div className="text-slate-400 text-[11px] leading-snug">{web.keyContribution}</div>
-                        <div className="pt-1 border-t border-[#1e2f4a]/70">
+                        <div className="pt-1 border-t border-slate-700/70">
                           <a
                             href={web.url}
                             target="_blank"
@@ -713,13 +729,13 @@ export default function App() {
                 </div>
 
                 {/* YouTube Videos */}
-                <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5 space-y-4">
-                  <div className="flex items-center justify-between pb-2 border-b border-[#1e2f4a]">
+                <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-700">
                     <div className="flex items-center gap-2">
                       <Youtube className="w-4 h-4 text-rose-400" />
                       <h4 className="text-sm font-bold text-white">Supplementary Videos</h4>
                     </div>
-                    <span className="text-[10px] font-mono font-bold text-rose-400 bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800">
+                    <span className="text-[10px] font-mono font-bold text-rose-300 bg-rose-950/70 px-2 py-0.5 rounded border border-rose-800">
                       {currentLesson.researchSources?.youtubeVideos?.length || 0} Curated
                     </span>
                   </div>
@@ -732,14 +748,14 @@ export default function App() {
                         : `https://www.youtube.com/results?search_query=${encodeURIComponent(vid.title + ' ' + vid.channel)}`;
 
                       return (
-                        <div key={idx} className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a] text-xs space-y-2 hover:border-[#284164] transition-colors">
+                        <div key={idx} className="p-3 bg-slate-900 rounded-lg border border-slate-700 text-xs space-y-2 hover:border-slate-600 transition-colors">
                           <div className="font-semibold text-slate-200">{vid.title}</div>
                           <div className="flex items-center justify-between text-slate-400 text-[11px]">
                             <span className="text-slate-300 font-medium">{vid.channel}</span>
                             <span className="font-mono text-teal-400 font-semibold">{vid.approxDuration}</span>
                           </div>
                           <div className="text-slate-400 text-[11px] leading-snug">{vid.recommendedClip}</div>
-                          <div className="pt-1 border-t border-[#1e2f4a]/70">
+                          <div className="pt-1 border-t border-slate-700/70">
                             <a
                               href={watchUrl}
                               target="_blank"
@@ -775,13 +791,13 @@ export default function App() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setActiveTab('qc-audit')}
-                  className="px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-[#182740] rounded-lg border border-[#22395d] transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-semibold text-slate-200 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg border border-slate-600 transition-all transform hover:-translate-y-0.5 cursor-pointer"
                 >
                   View Dual QC Audit &rarr;
                 </button>
                 <button
                   onClick={() => setActiveTab('player')}
-                  className="px-3 py-1.5 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-lg transition-all transform hover:-translate-y-0.5 cursor-pointer"
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-teal-600 hover:bg-teal-500 rounded-lg transition-all transform hover:-translate-y-0.5 cursor-pointer shadow-sm"
                 >
                   Open 45-Min Player &rarr;
                 </button>
@@ -868,14 +884,18 @@ export default function App() {
         qc2Report={qc2Report}
       />
 
-      <GlassmorphicShowcaseModal
-        isOpen={isGlassShowcaseOpen}
-        onClose={() => setIsGlassShowcaseOpen(false)}
-      />
-
-      {/* Footer */}
-      <footer className="border-t border-[#1e2f4a] bg-[#0b121f] py-6 px-6 text-center text-xs text-slate-400">
-        <p>EduCraft AI · 45-Minute Curriculum Architecture & Dual QC Validation Studio</p>
+      {/* Footer with Creator Attribution */}
+      <footer className="border-t border-slate-800 bg-slate-900/95 py-6 px-6 text-center text-xs text-slate-400">
+        <div className="max-w-7xl w-full mx-auto flex flex-col sm:flex-row items-center justify-between gap-3">
+          <div className="flex items-center gap-2 font-medium text-slate-300">
+            <span className="text-teal-400 font-bold">EduCraft AI</span>
+            <span>·</span>
+            <span>Curriculum Architecture & Dual QC Validation Studio</span>
+          </div>
+          <div className="text-slate-400 font-medium">
+            done by <strong className="text-teal-400 font-semibold">Naghul Pranav K R</strong>
+          </div>
+        </div>
       </footer>
     </div>
   );

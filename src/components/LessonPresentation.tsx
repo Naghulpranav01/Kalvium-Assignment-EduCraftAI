@@ -326,16 +326,16 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
     <div className="space-y-6">
       {/* Toast Notification */}
       {quizFeedbackToast && (
-        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[#131f33] border border-teal-500/80 shadow-2xl text-xs font-semibold text-teal-300">
+        <div className="fixed top-5 right-5 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 border border-teal-500/80 shadow-2xl text-xs font-semibold text-teal-300">
           <Check className="w-4 h-4 text-teal-400" />
           <span>{quizFeedbackToast}</span>
         </div>
       )}
 
       {/* Top Controller Bar - Low-Fatigue Teal & Muted Slate Palette */}
-      <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-sm">
         {/* Left: Mode Switcher */}
-        <div className="flex items-center gap-1 p-1 bg-[#0b121f] rounded-lg border border-[#1e2f4a]">
+        <div className="flex items-center gap-1 p-1 bg-slate-900 rounded-lg border border-slate-700">
           <button
             onClick={() => setDeliveryMode('instructor')}
             className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-md transition-colors cursor-pointer ${
@@ -360,31 +360,39 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
           </button>
         </div>
 
-        {/* Center: Live 45-Minute Lesson Timer */}
-        <div className="flex items-center gap-3 bg-[#0b121f] px-4 py-1.5 rounded-lg border border-[#1e2f4a]">
-          <div className="flex items-center gap-1.5 text-xs text-slate-300">
-            <Clock className="w-3.5 h-3.5 text-teal-400" />
-            <span>Lesson Pacing:</span>
+        {/* Center: Live 45-Minute Lesson Timer & Branding */}
+        <div className="flex items-center gap-3">
+          <div className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-[11px] text-teal-300">
+            <span className="font-semibold">EduCraft AI</span>
+            <span className="text-slate-500">·</span>
+            <span>done by Naghul Pranav K R</span>
           </div>
-          <span className="font-mono font-bold text-white text-base tabular-nums">
-            {formatTimer(elapsedSeconds)} / 45:00
-          </span>
 
-          <div className="flex items-center gap-1 border-l border-[#1e2f4a] pl-2">
-            <button
-              onClick={toggleTimer}
-              className="p-1 hover:text-white text-slate-300 transition-colors cursor-pointer"
-              title={timerRunning ? 'Pause timer' : 'Start timer'}
-            >
-              {timerRunning ? <Pause className="w-3.5 h-3.5 text-amber-400" /> : <Play className="w-3.5 h-3.5 text-teal-400" />}
-            </button>
-            <button
-              onClick={resetTimer}
-              className="p-1 hover:text-white text-slate-300 transition-colors cursor-pointer"
-              title="Reset timer"
-            >
-              <RotateCcw className="w-3.5 h-3.5" />
-            </button>
+          <div className="flex items-center gap-3 bg-slate-900 px-4 py-1.5 rounded-lg border border-slate-700">
+            <div className="flex items-center gap-1.5 text-xs text-slate-300">
+              <Clock className="w-3.5 h-3.5 text-teal-400" />
+              <span>Lesson Pacing:</span>
+            </div>
+            <span className="font-mono font-bold text-white text-base tabular-nums">
+              {formatTimer(elapsedSeconds)} / 45:00
+            </span>
+
+            <div className="flex items-center gap-1 border-l border-slate-700 pl-2">
+              <button
+                onClick={toggleTimer}
+                className="p-1 hover:text-white text-slate-300 transition-colors cursor-pointer"
+                title={timerRunning ? 'Pause timer' : 'Start timer'}
+              >
+                {timerRunning ? <Pause className="w-3.5 h-3.5 text-amber-400" /> : <Play className="w-3.5 h-3.5 text-teal-400" />}
+              </button>
+              <button
+                onClick={resetTimer}
+                className="p-1 hover:text-white text-slate-300 transition-colors cursor-pointer"
+                title="Reset timer"
+              >
+                <RotateCcw className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -395,7 +403,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors cursor-pointer ${
               showSpeakerNotes
                 ? 'bg-teal-950/80 text-teal-300 border-teal-800'
-                : 'bg-[#182740] text-slate-300 border-[#22395d] hover:text-white'
+                : 'bg-slate-700 text-slate-300 border-slate-600 hover:text-white'
             }`}
           >
             {showSpeakerNotes ? 'Hide Speaker Notes' : 'Show Speaker Notes'}
@@ -404,7 +412,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
       </div>
 
       {/* VISUAL PROGRESS BAR WITH PERSISTENT NAVIGATIONAL DOTS */}
-      <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5 space-y-4 shadow-sm">
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4 shadow-sm">
         {/* Progress Bar Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-2.5">
@@ -417,7 +425,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
           </div>
 
           <div className="flex items-center gap-3 text-xs font-mono">
-            <span className="text-teal-300 font-semibold bg-[#0b121f] px-2.5 py-1 rounded-md border border-[#1e2f4a]">
+            <span className="text-teal-300 font-semibold bg-slate-900 px-2.5 py-1 rounded-md border border-slate-700">
               Window: {currentTiming.timeWindow}
             </span>
             <span className="text-slate-400">
@@ -429,7 +437,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
         {/* Persistent Navigational Track with Proportional Dots */}
         <div className="relative pt-3 pb-6 px-3">
           {/* Background Track Line */}
-          <div className="absolute top-6 left-3 right-3 h-1.5 bg-[#0b121f] rounded-full border border-[#1e2f4a]" />
+          <div className="absolute top-6 left-3 right-3 h-1.5 bg-slate-900 rounded-full border border-slate-700" />
 
           {/* Animated Gradient Active Fill Line */}
           <div
@@ -454,10 +462,10 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                     title={`Jump to Phase ${idx + 1}: ${sec.title} (${sec.allocatedMinutes} min)`}
                     className={`group relative flex items-center justify-center w-8 h-8 rounded-full transition-all duration-200 cursor-pointer ${
                       isCurrent
-                        ? 'bg-teal-400 text-[#0b121f] font-extrabold ring-4 ring-teal-500/40 shadow-lg scale-110'
+                        ? 'bg-teal-400 text-slate-950 font-extrabold ring-4 ring-teal-500/40 shadow-lg scale-110'
                         : isPast
                         ? 'bg-teal-700 text-teal-100 hover:bg-teal-600 hover:scale-105'
-                        : 'bg-[#0b121f] text-slate-400 border-2 border-[#1e2f4a] hover:border-slate-500 hover:text-white'
+                        : 'bg-slate-900 text-slate-400 border-2 border-slate-700 hover:border-slate-500 hover:text-white'
                     }`}
                   >
                     {isPast ? (
@@ -499,7 +507,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
         </div>
 
         {/* Phase Jump Cards Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 border-t border-[#1e2f4a]/60">
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 pt-1 border-t border-slate-700/60">
           {lesson.sections.map((sec, idx) => (
             <button
               key={sec.id}
@@ -507,7 +515,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
               className={`p-2.5 rounded-lg text-left transition-all cursor-pointer border transform hover:-translate-y-0.5 ${
                 currentSectionIndex === idx
                   ? 'bg-teal-950/90 border-teal-500 text-white shadow-sm ring-1 ring-teal-500/50'
-                  : 'bg-[#0b121f] border-[#1e2f4a] text-slate-300 hover:text-white hover:border-slate-600'
+                  : 'bg-slate-900 border-slate-700 text-slate-300 hover:text-white hover:border-slate-600'
               }`}
             >
               <div className="flex items-center justify-between text-[10px] uppercase tracking-wider font-mono text-teal-400">
@@ -522,7 +530,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
 
       {/* INLINE VIDEO MODAL (IF USER CLICKS WATCH IN PLAYER) */}
       {activeEmbedVideo && (
-        <div className="bg-[#131f33] border-2 border-teal-500/80 rounded-2xl p-5 space-y-3 shadow-2xl">
+        <div className="bg-slate-800 border-2 border-teal-500/80 rounded-2xl p-5 space-y-3 shadow-2xl">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Youtube className="w-5 h-5 text-rose-400" />
@@ -532,13 +540,13 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             </div>
             <button
               onClick={() => setActiveEmbedVideo(null)}
-              className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-[#182740] cursor-pointer"
+              className="p-1 text-slate-400 hover:text-white rounded-lg hover:bg-slate-700 cursor-pointer"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-          <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-[#1e2f4a]">
+          <div className="relative aspect-video rounded-xl overflow-hidden bg-black border border-slate-700">
             <iframe
               src={`https://www.youtube-nocookie.com/embed/${activeEmbedVideo.id}?autoplay=1`}
               title={activeEmbedVideo.title}
@@ -554,8 +562,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
       {currentSection && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Lesson Content (2 Columns) */}
-          <div className="lg:col-span-2 bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6 lg:p-8 space-y-6">
-            <div className="border-b border-[#1e2f4a] pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="lg:col-span-2 bg-slate-800 border border-slate-700 rounded-xl p-6 lg:p-8 space-y-6">
+            <div className="border-b border-slate-700 pb-4 flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div className="space-y-1">
                 <div className="flex items-center gap-2.5 text-xs text-teal-400 font-mono mb-1">
                   <span>SECTION {currentSectionIndex + 1} OF {lesson.sections.length}</span>
@@ -572,7 +580,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
               </div>
 
               {/* READ ALOUD AUDIO NARRATION SUITE (Web Speech API) */}
-              <div className="flex flex-wrap items-center gap-2 shrink-0 bg-[#0b121f] p-2 rounded-xl border border-[#1e2f4a] shadow-sm">
+              <div className="flex flex-wrap items-center gap-2 shrink-0 bg-slate-900 p-2 rounded-xl border border-slate-700 shadow-sm">
                 {!isSpeaking ? (
                   <button
                     onClick={handleToggleReadAloud}
@@ -598,7 +606,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                     {/* Pause / Resume */}
                     <button
                       onClick={handleToggleReadAloud}
-                      className="p-2 text-slate-200 hover:text-white bg-[#182740] hover:bg-[#22395d] rounded-lg transition-colors cursor-pointer"
+                      className="p-2 text-slate-200 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg transition-colors cursor-pointer"
                       title={isSpeechPaused ? 'Resume narration' : 'Pause narration'}
                     >
                       {isSpeechPaused ? <Play className="w-3.5 h-3.5 text-teal-400" /> : <Pause className="w-3.5 h-3.5 text-amber-400" />}
@@ -607,7 +615,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                     {/* Stop */}
                     <button
                       onClick={handleStopSpeech}
-                      className="p-2 text-slate-200 hover:text-rose-400 bg-[#182740] hover:bg-rose-950/60 rounded-lg transition-colors cursor-pointer"
+                      className="p-2 text-slate-200 hover:text-rose-400 bg-slate-700 hover:bg-rose-950/60 rounded-lg transition-colors cursor-pointer"
                       title="Stop narration"
                     >
                       <Square className="w-3.5 h-3.5 text-rose-400" />
@@ -616,7 +624,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                 )}
 
                 {/* Speech Speed Multipliers */}
-                <div className="flex items-center gap-1 border-l border-[#1e2f4a] pl-2 text-[10px] font-mono">
+                <div className="flex items-center gap-1 border-l border-slate-700 pl-2 text-[10px] font-mono">
                   {[1.0, 1.25, 1.5].map((rate) => (
                     <button
                       key={rate}
@@ -654,7 +662,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                 }
                 if (paragraph.startsWith('```')) {
                   return (
-                    <pre key={pIdx} className="p-4 rounded-lg bg-[#0b121f] border border-[#1e2f4a] font-mono text-xs text-teal-300 overflow-x-auto">
+                    <pre key={pIdx} className="p-4 rounded-lg bg-slate-900 border border-slate-700 font-mono text-xs text-teal-300 overflow-x-auto">
                       <code>{paragraph.replace(/```[a-z]*\n?/g, '')}</code>
                     </pre>
                   );
@@ -676,7 +684,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
 
             {/* Interactive Element (Code Exercise or Thought Experiment) */}
             {currentSection.interactiveElement && (
-              <div className="p-5 rounded-xl bg-[#0b121f] border border-teal-900/60 space-y-3 mt-6">
+              <div className="p-5 rounded-xl bg-slate-900 border border-teal-900/60 space-y-3 mt-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-teal-400" />
@@ -706,11 +714,11 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             )}
 
             {/* Prev / Next Navigation Buttons */}
-            <div className="flex items-center justify-between pt-6 border-t border-[#1e2f4a]">
+            <div className="flex items-center justify-between pt-6 border-t border-slate-700">
               <button
                 disabled={currentSectionIndex === 0}
                 onClick={() => setCurrentSectionIndex((prev) => Math.max(0, prev - 1))}
-                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white bg-[#182740] hover:bg-[#203354] rounded-lg disabled:opacity-40 transition-colors cursor-pointer"
+                className="flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-slate-200 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-lg disabled:opacity-40 transition-colors cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
                 <span>Previous Phase</span>
@@ -735,7 +743,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
           <div className="space-y-6">
             {/* Instructor Speaker Notes Card */}
             {deliveryMode === 'instructor' && showSpeakerNotes && (
-              <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5">
+              <div className="bg-slate-800 border border-slate-700 rounded-xl p-5">
                 <div className="flex items-center gap-2 mb-3">
                   <UserCheck className="w-4 h-4 text-amber-400" />
                   <h3 className="text-sm font-bold text-white uppercase tracking-wider">
@@ -749,8 +757,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             )}
 
             {/* Supplementary YouTube Videos with Direct Watch Links & Embedded Play Option */}
-            <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1e2f4a]">
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-700">
                 <div className="flex items-center gap-2">
                   <Youtube className="w-4 h-4 text-rose-400" />
                   <h3 className="text-sm font-bold text-white">Video Resources</h3>
@@ -766,7 +774,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                   const embedId = getYouTubeEmbedId(vid);
 
                   return (
-                    <div key={vIdx} className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a] text-xs space-y-2 hover:border-[#284164] transition-colors">
+                    <div key={vIdx} className="p-3 bg-slate-900 rounded-lg border border-slate-700 text-xs space-y-2 hover:border-slate-600 transition-colors">
                       <div className="font-semibold text-slate-200">{vid.title}</div>
                       <div className="flex items-center justify-between text-slate-400 text-[11px]">
                         <span className="text-slate-300 font-medium">{vid.channel}</span>
@@ -777,7 +785,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                       </p>
 
                       {/* Direct Clickable Action Buttons */}
-                      <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#1e2f4a]/70">
+                      <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-700/70">
                         <a
                           href={watchUrl}
                           target="_blank"
@@ -792,7 +800,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                         {embedId && (
                           <button
                             onClick={() => setActiveEmbedVideo({ id: embedId, title: vid.title })}
-                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:text-white bg-[#182740] hover:bg-[#22395d] rounded-md border border-[#22395d] transition-colors cursor-pointer"
+                            className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-slate-200 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-md border border-slate-600 transition-colors cursor-pointer"
                           >
                             <Video className="w-3 h-3 text-teal-400" />
                             <span>Play In Lesson</span>
@@ -806,8 +814,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             </div>
 
             {/* Canonical Reference Books with Direct Clickable Open Library & Publisher Links */}
-            <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1e2f4a]">
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-700">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-sky-400" />
                   <h3 className="text-sm font-bold text-white">Canonical Textbooks</h3>
@@ -822,7 +830,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                   const { directUrl, libraryUrl } = getBookLinks(b);
 
                   return (
-                    <div key={bIdx} className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a] text-xs space-y-2 hover:border-[#284164] transition-colors">
+                    <div key={bIdx} className="p-3 bg-slate-900 rounded-lg border border-slate-700 text-xs space-y-2 hover:border-slate-600 transition-colors">
                       <div className="font-semibold text-slate-200 leading-snug">
                         {b.title} <span className="text-slate-400 font-normal">({b.year})</span>
                       </div>
@@ -831,7 +839,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                       <div className="text-teal-300 text-[11px] leading-snug">{b.relevance}</div>
 
                       {/* Direct Clickable Textbook Links */}
-                      <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-[#1e2f4a]/70">
+                      <div className="flex flex-wrap items-center gap-2 pt-1 border-t border-slate-700/70">
                         <a
                           href={directUrl}
                           target="_blank"
@@ -847,7 +855,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                           href={libraryUrl}
                           target="_blank"
                           rel="noreferrer"
-                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-white bg-[#182740] hover:bg-[#22395d] rounded-md border border-[#22395d] transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 rounded-md border border-slate-600 transition-colors"
                         >
                           <Library className="w-3 h-3 text-teal-400" />
                           <span>Open Library Archive</span>
@@ -861,8 +869,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             </div>
 
             {/* Web Docs & RFC Specifications */}
-            <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-5 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-[#1e2f4a]">
+            <div className="bg-slate-800 border border-slate-700 rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-700">
                 <div className="flex items-center gap-2">
                   <Globe className="w-4 h-4 text-teal-400" />
                   <h3 className="text-sm font-bold text-white">Official Web RFCs & Docs</h3>
@@ -874,7 +882,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
 
               <div className="space-y-2.5">
                 {lesson.researchSources?.websites?.map((web, wIdx) => (
-                  <div key={wIdx} className="p-3 bg-[#0b121f] rounded-lg border border-[#1e2f4a] text-xs space-y-1.5 hover:border-[#284164] transition-colors">
+                  <div key={wIdx} className="p-3 bg-slate-900 rounded-lg border border-slate-700 text-xs space-y-1.5 hover:border-slate-600 transition-colors">
                     <div className="font-semibold text-slate-200">{web.title}</div>
                     <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800">
                       {web.sourceType}
@@ -898,8 +906,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
       )}
 
       {/* FULL CANONICAL RESEARCH & MULTIMEDIA CITATIONS BANNER */}
-      <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6 lg:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1e2f4a] pb-4">
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 lg:p-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700 pb-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-teal-400 uppercase tracking-wider mb-1">
               <BookOpen className="w-4 h-4" />
@@ -914,8 +922,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Column 1: Books */}
-          <div className="bg-[#0b121f] border border-[#1e2f4a] rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#1e2f4a]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-700">
               <BookMarked className="w-4 h-4 text-sky-400" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">
                 Canonical Textbooks ({lesson.researchSources?.books?.length || 0})
@@ -925,7 +933,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
               {lesson.researchSources?.books?.map((b, idx) => {
                 const { directUrl, libraryUrl } = getBookLinks(b);
                 return (
-                  <div key={idx} className="p-3 bg-[#131f33] rounded-lg border border-[#1e2f4a] text-xs space-y-1.5">
+                  <div key={idx} className="p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs space-y-1.5">
                     <div className="font-semibold text-white">{b.title}</div>
                     <div className="text-slate-400 text-[11px]">{b.author} ({b.year})</div>
                     <div className="text-slate-400 text-[11px] italic">{b.chapterOrTopic}</div>
@@ -957,8 +965,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
           </div>
 
           {/* Column 2: Web Docs / RFCs */}
-          <div className="bg-[#0b121f] border border-[#1e2f4a] rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#1e2f4a]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-700">
               <Globe className="w-4 h-4 text-teal-400" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">
                 Official RFCs & Documentation ({lesson.researchSources?.websites?.length || 0})
@@ -966,7 +974,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             </div>
             <div className="space-y-3">
               {lesson.researchSources?.websites?.map((web, idx) => (
-                <div key={idx} className="p-3 bg-[#131f33] rounded-lg border border-[#1e2f4a] text-xs space-y-1.5">
+                <div key={idx} className="p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs space-y-1.5">
                   <div className="font-semibold text-white">{web.title}</div>
                   <span className="inline-block text-[10px] font-semibold px-2 py-0.5 rounded bg-teal-950 text-teal-300 border border-teal-800">
                     {web.sourceType}
@@ -987,8 +995,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
           </div>
 
           {/* Column 3: YouTube Videos */}
-          <div className="bg-[#0b121f] border border-[#1e2f4a] rounded-xl p-4 space-y-3">
-            <div className="flex items-center gap-2 pb-2 border-b border-[#1e2f4a]">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-4 space-y-3">
+            <div className="flex items-center gap-2 pb-2 border-b border-slate-700">
               <Youtube className="w-4 h-4 text-rose-400" />
               <h4 className="text-xs font-bold text-white uppercase tracking-wider">
                 Curated Video Lectures ({lesson.researchSources?.youtubeVideos?.length || 0})
@@ -1000,7 +1008,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                 const embedId = getYouTubeEmbedId(vid);
 
                 return (
-                  <div key={idx} className="p-3 bg-[#131f33] rounded-lg border border-[#1e2f4a] text-xs space-y-1.5">
+                  <div key={idx} className="p-3 bg-slate-800 rounded-lg border border-slate-700 text-xs space-y-1.5">
                     <div className="font-semibold text-white">{vid.title}</div>
                     <div className="flex items-center justify-between text-slate-400 text-[11px]">
                       <span>{vid.channel}</span>
@@ -1038,8 +1046,8 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
       </div>
 
       {/* DYNAMIC LESSON MASTERY QUIZ FEATURE */}
-      <div className="bg-[#131f33] border border-[#1e2f4a] rounded-xl p-6 lg:p-8 space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1e2f4a] pb-4">
+      <div className="bg-slate-800 border border-slate-700 rounded-xl p-6 lg:p-8 space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-700 pb-4">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-teal-400 uppercase tracking-wider mb-1">
               <HelpCircle className="w-4 h-4" />
@@ -1080,7 +1088,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             {quizSubmitted ? (
               <button
                 onClick={resetQuiz}
-                className="flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-[#182740] rounded-lg border border-[#22395d] transition-colors cursor-pointer"
+                className="flex items-center gap-1 px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-700 rounded-lg border border-slate-600 transition-colors cursor-pointer"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
                 <span>Retake Quiz</span>
@@ -1108,7 +1116,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
             return (
               <div
                 key={q.id || qIdx}
-                className="p-5 rounded-xl bg-[#0b121f] border border-[#1e2f4a] space-y-3 transition-all hover:border-[#284164]"
+                className="p-5 rounded-xl bg-slate-900 border border-slate-700 space-y-3 transition-all hover:border-slate-600"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex items-start gap-2.5">
@@ -1137,7 +1145,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
                     const isThisSelected = selectedOpt === optIdx;
                     const isThisCorrect = q.correctIndex === optIdx;
 
-                    let optionStyle = 'bg-[#131f33] border-[#1e2f4a] text-slate-200 hover:border-teal-600/60';
+                    let optionStyle = 'bg-slate-800 border-slate-700 text-slate-200 hover:border-teal-600/60';
                     if (isThisSelected && !showEvaluation) {
                       optionStyle = 'bg-teal-950 border-teal-500 text-white ring-1 ring-teal-500';
                     } else if (showEvaluation) {
@@ -1173,7 +1181,7 @@ export const LessonPresentation: React.FC<Props> = ({ lesson }) => {
 
                 {/* Immediate Feedback Rationale */}
                 {showEvaluation && (
-                  <div className="p-3.5 rounded-lg bg-[#131f33]/90 border border-teal-900/50 text-xs text-slate-200 leading-relaxed mt-2 space-y-1">
+                  <div className="p-3.5 rounded-lg bg-slate-800/90 border border-teal-900/50 text-xs text-slate-200 leading-relaxed mt-2 space-y-1">
                     <span className="font-semibold text-teal-300 block">
                       Pedagogical Rationale:
                     </span>

@@ -1,6 +1,11 @@
 {
   "name": "EduCraft AI - 45-Min Lesson & Dual QC Studio",
-  "description": "AI-powered educational curriculum design tool. Generates 45-minute structured lessons synthesized from books, web sources, and YouTube videos, fortified with two independent Quality Control audit layers (Factual Accuracy & Instructional Quality), interactive 3D pedagogy visualization, audio transcription, dynamic quiz generator, and video analysis.",
-  "requestFramePermissions": ["camera", "microphone"],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+  "description": "EduCraft AI · Curriculum Architecture & Dual QC Validation Studio done by Naghul Pranav K R. Generates 45-minute structured lessons synthesized from books, web sources, and YouTube videos, fortified with two independent Quality Control audit layers, interactive 3D pedagogy visualization, audio transcription, dynamic quiz generator, and video analysis.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

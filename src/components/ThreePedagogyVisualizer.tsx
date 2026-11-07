@@ -47,12 +47,15 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
   const highlightRingRef = useRef<THREE.Mesh | null>(null);
   const explosionRef = useRef(1.0);
   const speedRef = useRef(0.8);
+  const activeSectionIndexRef = useRef(activeSectionIndex);
 
   explosionRef.current = explosionFactor;
   speedRef.current = rotationSpeed;
+  activeSectionIndexRef.current = activeSectionIndex;
 
   useEffect(() => {
     setSelectedNodeIndex(activeSectionIndex);
+    activeSectionIndexRef.current = activeSectionIndex;
   }, [activeSectionIndex]);
 
   useEffect(() => {
@@ -395,7 +398,7 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
             child.position.y = Math.sin(u.angle * 2 + time * 1.2) * 0.25;
 
             // Highlight ring tracking active node
-            if (u.index === activeSectionIndex && highlightRingRef.current) {
+            if (u.index === activeSectionIndexRef.current && highlightRingRef.current) {
               highlightRingRef.current.position.set(child.position.x, child.position.y - 0.45, child.position.z);
             }
           }
@@ -419,7 +422,7 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
         container.removeChild(renderer.domElement);
       }
     };
-  }, [lesson, activeSectionIndex]);
+  }, [lesson]);
 
   // Camera Presets
   const setCameraPreset = (preset: 'overview' | 'top' | 'focus' | 'isometric') => {
@@ -447,31 +450,33 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
   };
 
   return (
-    <div className="relative w-full h-[540px] lg:h-[640px] rounded-2xl overflow-hidden bg-[#0a101d] border border-[#1e2f4a] shadow-2xl">
+    <div className="relative w-full h-[540px] lg:h-[640px] rounded-2xl overflow-hidden bg-slate-950 border border-slate-700 shadow-2xl">
       {/* 3D WebGL Canvas Container */}
       <div ref={containerRef} className="absolute inset-0 w-full h-full" />
 
       {/* Top Left Spec Badge - Low Fatigue Colors */}
       <div className="absolute top-4 left-4 z-10 pointer-events-none flex flex-col gap-1.5">
-        <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-teal-300 bg-[#131f33]/90 px-3 py-1.5 rounded-lg border border-[#1e2f4a]">
+        <div className="flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-teal-300 bg-slate-800/95 px-3 py-1.5 rounded-lg border border-slate-700 shadow-sm">
           <Sparkles className="w-3.5 h-3.5 text-teal-400" />
-          <span>45-Min Pedagogical Knowledge Core</span>
+          <span>EduCraft AI · 3D Pedagogical Knowledge Engine</span>
         </div>
-        <div className="flex items-center gap-2 text-xs text-slate-300 bg-[#131f33]/70 px-3 py-1 rounded-lg border border-[#1e2f4a]/70 backdrop-blur-sm">
+        <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-800/80 px-3 py-1 rounded-lg border border-slate-700 backdrop-blur-sm shadow-sm">
           <span>{lesson?.title || 'Interactive Curriculum Model'}</span>
           <span aria-hidden="true">·</span>
           <span>5 Modular Phases</span>
+          <span aria-hidden="true">·</span>
+          <span className="text-teal-300 font-medium">done by Naghul Pranav K R</span>
         </div>
       </div>
 
       {/* Top Right QC Halo Metrics */}
       <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
-        <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-[#131f33]/90 border border-teal-800/60 text-teal-200">
+        <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-slate-800/95 border border-teal-700/60 text-teal-200 shadow-sm">
           <ShieldCheck className="w-3.5 h-3.5 text-teal-400" />
           <span>QC1 Accuracy:</span>
           <span className="font-mono font-bold text-white">{qc1Score}%</span>
         </div>
-        <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-[#131f33]/90 border border-sky-800/60 text-sky-200">
+        <div className="flex items-center gap-2 text-xs px-3 py-1.5 rounded-lg bg-slate-800/95 border border-sky-700/60 text-sky-200 shadow-sm">
           <CheckCircle2 className="w-3.5 h-3.5 text-sky-400" />
           <span>QC2 Instructional:</span>
           <span className="font-mono font-bold text-white">{qc2Score}%</span>
@@ -480,7 +485,7 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
 
       {/* Hover Node Tooltip / HUD Indicator */}
       {hoveredNodeName && (
-        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 pointer-events-none px-4 py-2 rounded-lg bg-[#131f33]/95 border border-teal-500/60 shadow-xl text-center">
+        <div className="absolute top-16 left-1/2 -translate-x-1/2 z-10 pointer-events-none px-4 py-2 rounded-lg bg-slate-800/95 border border-teal-500/60 shadow-xl text-center">
           <p className="text-[11px] text-teal-300 font-medium uppercase tracking-wider">Click To Inspect Phase</p>
           <p className="text-sm font-semibold text-white">{hoveredNodeName}</p>
         </div>
@@ -493,7 +498,7 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
         {/* Toggle Collapse Pill */}
         <button
           onClick={() => setIsZenMode(!isZenMode)}
-          className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-slate-300 bg-[#131f33]/90 hover:text-white hover:bg-[#182740] border border-[#1e2f4a] rounded-full shadow-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-slate-300 bg-slate-800/95 hover:text-white hover:bg-slate-700 border border-slate-700 rounded-full shadow-lg transition-colors cursor-pointer"
         >
           {isZenMode ? (
             <>
@@ -510,7 +515,7 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
 
         {/* Consolidated Horizontal Control Dock */}
         {!isZenMode && (
-          <div className="w-full bg-[#131f33]/95 border border-[#1e2f4a] rounded-xl p-3 shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="w-full bg-slate-800/95 border border-slate-700 rounded-xl p-3 shadow-2xl flex flex-wrap items-center justify-between gap-3 text-xs">
             {/* Exploded View Slider */}
             <div className="flex items-center gap-2.5">
               <div className="flex items-center gap-1.5 text-slate-300 font-medium whitespace-nowrap">
@@ -552,21 +557,21 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
             <div className="flex items-center gap-1">
               <button
                 onClick={() => setCameraPreset('isometric')}
-                className="px-2 py-1 rounded bg-[#16253d] hover:bg-[#1e3455] text-slate-200 border border-[#22395d] transition-colors"
+                className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition-colors"
                 title="Isometric View"
               >
                 Iso
               </button>
               <button
                 onClick={() => setCameraPreset('top')}
-                className="px-2 py-1 rounded bg-[#16253d] hover:bg-[#1e3455] text-slate-200 border border-[#22395d] transition-colors"
+                className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition-colors"
                 title="Top-Down Plan"
               >
                 Top
               </button>
               <button
                 onClick={() => setCameraPreset('focus')}
-                className="px-2 py-1 rounded bg-[#16253d] hover:bg-[#1e3455] text-slate-200 border border-[#22395d] transition-colors"
+                className="px-2 py-1 rounded bg-slate-700 hover:bg-slate-600 text-slate-200 border border-slate-600 transition-colors"
                 title="Core Close-up"
               >
                 Core
@@ -585,7 +590,7 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
                   className={`px-2.5 py-1 rounded font-semibold transition-colors cursor-pointer ${
                     selectedNodeIndex === idx
                       ? 'bg-teal-600 text-white shadow-sm ring-1 ring-teal-400'
-                      : 'bg-[#16253d] text-slate-300 hover:text-white hover:bg-[#1e3455]'
+                      : 'bg-slate-700 text-slate-300 hover:text-white hover:bg-slate-600'
                   }`}
                   title={`Phase ${idx + 1}`}
                 >
@@ -597,7 +602,7 @@ export const ThreePedagogyVisualizer: React.FC<Props> = ({
             {/* Reset Button */}
             <button
               onClick={resetView}
-              className="flex items-center gap-1 px-2.5 py-1 text-slate-300 hover:text-white bg-[#16253d] hover:bg-[#1e3455] border border-[#22395d] rounded transition-colors cursor-pointer"
+              className="flex items-center gap-1 px-2.5 py-1 text-slate-300 hover:text-white bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded transition-colors cursor-pointer"
               title="Reset View"
             >
               <RotateCcw className="w-3 h-3" />
