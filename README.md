@@ -290,4 +290,4 @@ npm start
 
 ---
 
-*EduCraft AI · Curriculum Architecture & Dual QC Validation Studio*
+*EduCraft AI · Curriculum Architecture & Dual QC Validation Studio done by Naghul Pranav K R*
